@@ -30,9 +30,9 @@ public class Player : MonoBehaviour
 
     private bool m_bJump;
     public int forceConst = 500;
-
-
-
+    private CapsuleCollider m_cPlayerCollider;
+    private bool m_bCrouch;
+    public float m_fCrouchHeight;
 
 
     //--------------------------------------------------------------------------------------
@@ -43,7 +43,10 @@ public class Player : MonoBehaviour
     void Awake()
     {
         // Get the rigidbody component
-        m_rbRigidBody = GetComponent<Rigidbody>();		
+        m_rbRigidBody = GetComponent<Rigidbody>();
+
+        // Get the capsule collider of the player
+        m_cPlayerCollider = GetComponent<CapsuleCollider>();
 	}
 
     //--------------------------------------------------------------------------------------
@@ -78,6 +81,19 @@ public class Player : MonoBehaviour
 
 
 
+
+
+
+        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.C))
+        {
+            if (!m_bCrouch)
+                Crouch();
+        }
+        else
+        {
+            if (m_bCrouch)
+                StopCrouching();
+        }
 
 
 
@@ -141,6 +157,25 @@ public class Player : MonoBehaviour
         }
 
         return false;
+    }
+
+
+
+
+
+
+    void Crouch()
+    {
+        m_cPlayerCollider.height -= m_fCrouchHeight;
+        m_cPlayerCollider.center -= new Vector3(0, m_fCrouchHeight / 2, 0);
+        m_bCrouch = true;
+    }
+
+    void StopCrouching()
+    {
+        m_bCrouch = false;
+        m_cPlayerCollider.height += m_fCrouchHeight;
+        m_cPlayerCollider.center += new Vector3(0, m_fCrouchHeight / 2, 0);
     }
 }
 
