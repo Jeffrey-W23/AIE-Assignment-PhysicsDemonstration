@@ -33,6 +33,9 @@ public class Player : MonoBehaviour
     private CapsuleCollider m_cPlayerCollider;
     private bool m_bCrouch;
     public float m_fCrouchHeight;
+    public CrouchTrigger m_gCrouchTrigger;
+    public CameraController m_cCamera;
+    
 
 
     //--------------------------------------------------------------------------------------
@@ -47,7 +50,12 @@ public class Player : MonoBehaviour
 
         // Get the capsule collider of the player
         m_cPlayerCollider = GetComponent<CapsuleCollider>();
-	}
+
+
+
+
+        m_cCamera = GetComponent<CameraController>();
+    }
 
     //--------------------------------------------------------------------------------------
     // Update: Function that calls each frame to update game objects.
@@ -87,12 +95,18 @@ public class Player : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.C))
         {
             if (!m_bCrouch)
+            {
                 Crouch();
+                //m_gCrouchTrigger.GetComponent<SphereCollider>().isTrigger = true;
+            }
         }
         else
         {
             if (m_bCrouch)
+            {
                 StopCrouching();
+                //m_gCrouchTrigger.GetComponent<SphereCollider>().isTrigger = false;
+            }
         }
 
 
@@ -103,6 +117,30 @@ public class Player : MonoBehaviour
         {
             m_bJump = true;
         }
+
+
+
+
+        
+        RaycastHit rhHitInfo;
+
+        if (Input.GetMouseButtonDown(0))
+            {
+            Vector3 fwd = transform.TransformDirection(Vector3.forward);
+
+            if (Physics.Raycast(transform.position, fwd, out rhHitInfo, 2))
+            {
+                //print("There is something in front of the object!");
+                if (rhHitInfo.rigidbody)
+                    rhHitInfo.rigidbody.velocity = fwd * 10;
+            }
+        }
+
+
+
+
+
+
     }
 
     //--------------------------------------------------------------------------------------
@@ -145,17 +183,20 @@ public class Player : MonoBehaviour
 
     bool IsGrounded()
     {
-        Ray rRay = new Ray(transform.position, Vector3.down);
+
+        Debug.Log("IsGrounded");
+        Ray rRay = new Ray(transform.position - new Vector3(0, m_cPlayerCollider.height * 0.4f, 0), Vector3.down);
         RaycastHit rhHitInfo;
 
         int layerMask = (LayerMask.GetMask("Ground"));
 
-        if (Physics.Raycast(rRay, out rhHitInfo, 1.0f, layerMask))
+        if (Physics.Raycast(rRay, out rhHitInfo, 0.5f, layerMask))
         {
             Debug.Log(rhHitInfo.collider.name);
-            return true;    
+            return true;
         }
-
+        Debug.DrawRay(rRay.origin, Vector3.down);
+        Debug.Log(rRay.origin.ToString() + " " + rRay.direction.ToString());
         return false;
     }
 
@@ -168,14 +209,21 @@ public class Player : MonoBehaviour
     {
         m_cPlayerCollider.height -= m_fCrouchHeight;
         m_cPlayerCollider.center -= new Vector3(0, m_fCrouchHeight / 2, 0);
+
+        m_cCamera.offset.y -= m_fCrouchHeight;
+
         m_bCrouch = true;
     }
 
     void StopCrouching()
     {
-        m_bCrouch = false;
-        m_cPlayerCollider.height += m_fCrouchHeight;
-        m_cPlayerCollider.center += new Vector3(0, m_fCrouchHeight / 2, 0);
+        if (m_gCrouchTrigger.m_bCanStand)
+        {
+            m_bCrouch = false;
+            m_cPlayerCollider.height += m_fCrouchHeight;
+            m_cPlayerCollider.center += new Vector3(0, m_fCrouchHeight / 2, 0);
+            m_cCamera.offset.y += m_fCrouchHeight;
+        }
     }
 }
 
