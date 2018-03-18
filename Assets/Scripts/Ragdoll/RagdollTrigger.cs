@@ -1,23 +1,42 @@
-﻿using System.Collections;
+﻿// using, etc
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//--------------------------------------------------------------------------------------
+// RagdollTrigger object. Inheriting from MonoBehaviour. The Ragdoll trigger
+//--------------------------------------------------------------------------------------
 public class RagdollTrigger : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    //--------------------------------------------------------------------------------------
+    // initialization.
+    //--------------------------------------------------------------------------------------
+    void Start ()
+    {
 		
 	}
 
-    void OnTriggerEnter(Collider other)
+    //--------------------------------------------------------------------------------------
+    // Update: Function that calls each frame to update game objects.
+    //--------------------------------------------------------------------------------------
+    void Update ()
     {
-        Ragdoll ragdoll = other.gameObject.GetComponentInParent<Ragdoll>();
-        if (ragdoll != null)
-            ragdoll.RagdollOn = true;
+		
+	}
+
+    //--------------------------------------------------------------------------------------
+    // OnTriggerEnter: Unity on Trigger enter function.
+    //
+    // Param:
+    //      cOther: Collider value for collision information of the trigger object
+    //--------------------------------------------------------------------------------------
+    void OnTriggerEnter(Collider cOther)
+    {
+        // Get ragdoll component
+        Ragdoll rRagdoll = cOther.gameObject.GetComponentInParent<Ragdoll>();
+
+        // if not null turn on the ragdoll
+        if (rRagdoll != null)
+            rRagdoll.RagdollOn = true;
     }
 }

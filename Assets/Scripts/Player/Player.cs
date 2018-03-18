@@ -12,6 +12,18 @@ public class Player : MonoBehaviour
     //--------------------------------------------------------------------------------------
     // public float value for the walking speed.
     public float m_fWalkSpeed;
+
+    // public int for jumping force
+    public int m_nForceConst = 500;
+
+    // public float for the crouching height
+    public float m_fCrouchHeight;
+
+    // public gameobject for the crouch trigger
+    public CrouchTrigger m_gCrouchTrigger;
+
+    // public gameobject for the camera controller object
+    public CameraController m_cCamera;
     //--------------------------------------------------------------------------------------
 
     // PRIVATE VALUES //
@@ -21,23 +33,15 @@ public class Player : MonoBehaviour
 
     // private vector3 for the move direction
     private Vector3 m_v3MoveDirection;
-
-
-
-
-
-
-
-    private bool m_bJump;
-    public int forceConst = 500;
-    private CapsuleCollider m_cPlayerCollider;
-    private bool m_bCrouch;
-    public float m_fCrouchHeight;
-    public CrouchTrigger m_gCrouchTrigger;
-    public CameraController m_cCamera;
     
+    // private bool for if the player can jump
+    private bool m_bJump;
 
+    // private gameobject for the collider of the player
+    private CapsuleCollider m_cPlayerCollider;
 
+    // private bool for if the player can crouch
+    private bool m_bCrouch;
     //--------------------------------------------------------------------------------------
 
     //--------------------------------------------------------------------------------------
@@ -51,9 +55,7 @@ public class Player : MonoBehaviour
         // Get the capsule collider of the player
         m_cPlayerCollider = GetComponent<CapsuleCollider>();
 
-
-
-
+        // get the camera component
         m_cCamera = GetComponent<CameraController>();
     }
 
@@ -66,81 +68,62 @@ public class Player : MonoBehaviour
         float fHor = Input.GetAxis("Horizontal");
         float fVer = Input.GetAxis("Vertical");
 
-
-
-
-
-
-        //
+        // get the camera eulerAngles
         float y = Camera.main.transform.eulerAngles.y;
         float z = Camera.main.transform.eulerAngles.z;
 
-        //
+        // Set rotation
         Vector3 Dir = new Vector3(0, y, z);
         transform.rotation = Quaternion.Euler(Dir);
 
-
-
-
-
-
         // Apply axis values to the move direction variable
         m_v3MoveDirection = (fHor * transform.right + fVer * transform.forward).normalized;
-
-
-
-
-
-
+        
+        // If ctrl or c is held
         if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.C))
         {
+            // if not crouching
             if (!m_bCrouch)
             {
+                // Start crouch
                 Crouch();
-                //m_gCrouchTrigger.GetComponent<SphereCollider>().isTrigger = true;
             }
         }
         else
         {
+            // if coruching
             if (m_bCrouch)
             {
+                // Stop coruching
                 StopCrouching();
-                //m_gCrouchTrigger.GetComponent<SphereCollider>().isTrigger = false;
             }
         }
 
-
-
-
-
+        // if space bar is pressed and the player is grounded
         if (Input.GetKeyUp(KeyCode.Space) && IsGrounded())
         {
+            // can jump bool is true
             m_bJump = true;
         }
 
-
-
-
-        
+        // new ray cast hit
         RaycastHit rhHitInfo;
 
+        // if the left mouse is clicked
         if (Input.GetMouseButtonDown(0))
             {
-            Vector3 fwd = transform.TransformDirection(Vector3.forward);
 
-            if (Physics.Raycast(transform.position, fwd, out rhHitInfo, 2))
+            // Get the forward vector for the player
+            Vector3 v3Forward = transform.TransformDirection(Vector3.forward);
+
+            // if the forward vector collides with an object
+            if (Physics.Raycast(transform.position, v3Forward, out rhHitInfo, 2))
             {
-                //print("There is something in front of the object!");
+                //apply velocity to item if it is a rigidbody
                 if (rhHitInfo.rigidbody)
-                    rhHitInfo.rigidbody.velocity = fwd * 10;
+                    rhHitInfo.rigidbody.velocity = v3Forward * 10;
             }
         }
-
-
-
-
-
-
     }
 
     //--------------------------------------------------------------------------------------
@@ -151,11 +134,14 @@ public class Player : MonoBehaviour
         // Run the movement function
         Movement();
 
-
+        // Can the player jump?
         if (m_bJump)
         {
+            // player cant jump
             m_bJump = false;
-            m_rbRigidBody.AddForce(0, forceConst, 0, ForceMode.Impulse);
+
+            // Add force to the player to jump
+            m_rbRigidBody.AddForce(0, m_nForceConst, 0, ForceMode.Impulse);
         }
     }
 
@@ -164,69 +150,74 @@ public class Player : MonoBehaviour
     //--------------------------------------------------------------------------------------
     void Movement()
     {
-
-
-
-
-        //Vector3 v3VelFix = new Vector3(0, m_rbRigidBody.velocity.y, 0);
-
-
-
         // update the player volocity by move direction, walkspeed and deltatime.
         m_rbRigidBody.AddForce(m_v3MoveDirection * m_fWalkSpeed, ForceMode.Acceleration);
-
-
-
-
-        //m_rbRigidBody.velocity += v3VelFix;
     }
 
+    //--------------------------------------------------------------------------------------
+    // IsGrounded: Check if the player is on the ground.
+    //
+    // Return:
+    //      bool: bool value for if the player is grounded or not.
+    //--------------------------------------------------------------------------------------
     bool IsGrounded()
     {
-
+        // Cast a ray down from the player at the ground
         Debug.Log("IsGrounded");
         Ray rRay = new Ray(transform.position - new Vector3(0, m_cPlayerCollider.height * 0.4f, 0), Vector3.down);
         RaycastHit rhHitInfo;
 
-        int layerMask = (LayerMask.GetMask("Ground"));
+        // Set the layermask
+        int nLayerMask = (LayerMask.GetMask("Ground"));
 
-        if (Physics.Raycast(rRay, out rhHitInfo, 0.5f, layerMask))
+        // Is the ray colliding with the ground?
+        if (Physics.Raycast(rRay, out rhHitInfo, 0.5f, nLayerMask))
         {
+            // Return true and debug log the collider name
             Debug.Log(rhHitInfo.collider.name);
             return true;
         }
+        
+        // Draw the ray cast and print ray information in the console
         Debug.DrawRay(rRay.origin, Vector3.down);
         Debug.Log(rRay.origin.ToString() + " " + rRay.direction.ToString());
+        
+        // return false if not grounded
         return false;
     }
 
-
-
-
-
-
+    //--------------------------------------------------------------------------------------
+    // Crouch: Start the player crouching.
+    //--------------------------------------------------------------------------------------
     void Crouch()
     {
+        // Set the height and collider of the player for crouch
         m_cPlayerCollider.height -= m_fCrouchHeight;
         m_cPlayerCollider.center -= new Vector3(0, m_fCrouchHeight / 2, 0);
 
-        m_cCamera.offset.y -= m_fCrouchHeight;
+        // Set camera postion for crouch
+        m_cCamera.m_v3Offset.y -= m_fCrouchHeight;
 
+        // player is crouching 
         m_bCrouch = true;
     }
 
+    //--------------------------------------------------------------------------------------
+    // StopCrouching: Stop the player crouching.
+    //--------------------------------------------------------------------------------------
     void StopCrouching()
     {
+        // Can the player stand
         if (m_gCrouchTrigger.m_bCanStand)
         {
+            // stop crouching and set player height back
             m_bCrouch = false;
             m_cPlayerCollider.height += m_fCrouchHeight;
             m_cPlayerCollider.center += new Vector3(0, m_fCrouchHeight / 2, 0);
-            m_cCamera.offset.y += m_fCrouchHeight;
+            m_cCamera.m_v3Offset.y += m_fCrouchHeight;
         }
     }
 }
 
-
-
+// Tutorial used to get started with the player controller.
 //https://www.mvcode.com/lessons/first-person-camera-and-controller-jamie

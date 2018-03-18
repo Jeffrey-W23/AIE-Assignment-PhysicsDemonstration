@@ -1,30 +1,55 @@
-﻿using System.Collections;
+﻿// using, etc
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//--------------------------------------------------------------------------------------
+// CrouchTrigger object. Inheriting from MonoBehaviour. Script for checking if the 
+// player can stand
+//--------------------------------------------------------------------------------------
 public class CrouchTrigger : MonoBehaviour {
 
-    //[HideInInspector]
+    //public bool for if the player can stand
     public bool m_bCanStand;
 
-	// Use this for initialization
-	void Awake()
+    //--------------------------------------------------------------------------------------
+    // initialization.
+    //--------------------------------------------------------------------------------------
+    void Awake()
     {
+        // Set default values
         m_bCanStand = true;
 	}
-	
-	// Update is called once per frame
-	void Update () {
+
+    //--------------------------------------------------------------------------------------
+    // Update: Function that calls each frame to update game objects.
+    //--------------------------------------------------------------------------------------
+    void Update ()
+    {
 		
 	}
 
-    private void OnTriggerEnter(Collider other)
+    //--------------------------------------------------------------------------------------
+    // OnTriggerEnter: Unity on Trigger enter function.
+    //
+    // Param:
+    //      cOther: Collider value for collision information of the trigger object
+    //--------------------------------------------------------------------------------------
+    private void OnTriggerEnter(Collider cOther)
     {
+        // set can stand to false
         m_bCanStand = false;
     }
 
-    private void OnTriggerExit(Collider other)
+    //--------------------------------------------------------------------------------------
+    // OnTriggerExit: Unity on Trigger exit function.
+    //
+    // Param:
+    //      cOther: Collider value for collision information of the trigger object 
+    //--------------------------------------------------------------------------------------
+    private void OnTriggerExit(Collider cOther)
     {
+        // Set can stand to true
         m_bCanStand = true;
     }
 }
